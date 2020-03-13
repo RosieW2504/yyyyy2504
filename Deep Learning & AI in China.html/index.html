@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="style/style.css">
+
+    <style type="text/css" media="print">
+        .noprint {
+            display: none
+        }
+        
+        .print {
+            display: block !important;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <header class="el-header noprint">
+            <div class="icon-btns">
+                <i class="icon-list" @click="changeLeftMenu"></i>
+                <i class="icon-skip_previous" v-bind:class="{'disabled': currentPage == 1}" @click="changeCurrentPage('first')"></i>
+                <i class="icon-play_arrow prev-icon" v-bind:class="{'disabled': currentPage == 1}" @click="changeCurrentPage('prev')"></i>
+                <i class="icon-play_arrow" v-bind:class="{'disabled': currentPage == pageNum}" @click="changeCurrentPage('next')"></i>
+                <i class="icon-skip_next" v-bind:class="{'disabled': currentPage == pageNum}" @click="changeCurrentPage('last')"></i>
+                <select v-model="currentPage">
+                    <option v-for="page in pageNum" v-bind:value="page">page {{ page }}</option>
+                </select>
+                <i class="icon-zoom_in" v-bind:class="{'disabled': zoomNum == 2}" @click="modifyZoom('in')"></i>
+                <select v-model="zoomNum">
+                    <option value="0.5">50%</option>
+                    <option value="0.6">60%</option>
+                    <option value="0.7">70%</option>
+                    <option value="0.8">80%</option>
+                    <option value="0.9">90%</option>
+                    <option value="1.0" selected>100%</option>
+                    <option value="1.1">110%</option>
+                    <option value="1.2">120%</option>
+                    <option value="1.3">130%</option>
+                    <option value="1.4">140%</option>
+                    <option value="1.5">150%</option>
+                    <option value="1.6">160%</option>
+                    <option value="1.7">170%</option>
+                    <option value="1.8">180%</option>
+                    <option value="1.9">190%</option>
+                    <option value="2.0">200%</option>
+                </select>
+                <i class="icon-zoom_out" v-bind:class="{'disabled': zoomNum == 0.5}" @click="modifyZoom('out')"></i>
+                <i class="icon-format_align_left" @click="textAlign = 'left'"></i>
+                <i class="icon-format_align_center" @click="textAlign = 'center'"></i>
+                <i class="icon-format_align_right" @click="textAlign = 'right'"></i>
+                <i class="icon-print" @click="window.print()"></i>
+            </div>
+        </header>
+
+        <aside class="noprint" width="240px" v-show="ifMenuShow">
+            <nav class="tabNav">
+                <ul>
+                    <li v-bind:class="{ 'curr': currentNav == 0 }" @click="currentNav = 0">Page</li>
+                    <li v-bind:class="{ 'curr': currentNav == 1 }" @click="currentNav = 1">Bookmark</li>
+                </ul>
+
+                <div class="clear"></div>
+            </nav>
+
+            <div class="tab-conent scrollbar" v-bind:style="{ height: asideHeight + 'px' }">
+
+            <section v-show="currentNav == 0">
+                <ul class="page-menu">
+                    <li v-for="page in pageNum" v-bind:class="{ 'curr': currentPage == page }" @click="changePage(page)"><i class="icon-file-text2"></i> page {{ page }}</li>
+                </ul>
+            </section>
+
+            <section v-show="currentNav == 1">
+                <ul class="page-menu">
+                    <li v-for="page in pageNum" v-bind:class="{ 'curr': currentPage == page }" @click="changePage(page)"><i class="icon-turned_in_not"></i> Bookmark {{ page }}</li>
+                </ul>
+            </section>
+        </div>
+
+        </aside>
+        <div class="main scrollbar noprint"  v-bind:style="{ height: mainHeight + 'px' }" v-bind:class="{ 'mainLeftM': ifMenuShow, 'aleft': textAlign === 'left','acenter': textAlign === 'center','aright': textAlign === 'right'}">
+            <div class="conent" v-html="pageContent" v-bind:style="zoomStyle"></div>
+
+            <div class="clear"></div>
+        </div>
+
+        <!--专门只为打印的内容-->
+        <div class="conent print" style="display:none" v-html="pageContent"></div>
+    </div>
+</body>
+<!-- 先引入 Vue -->
+<script src="js/vue.min.js"></script>
+<script>
+
+var app = new Vue({
+        el: '#app',
+        data: function() {
+            return {
+                // visible: false,
+                isCollapse: false,
+                currentNav: 0,
+                activeName2: 'first',
+                pageNum: 1, 
+                currentPage: 1,
+                pageContent: '',
+                asideHeight: 300,
+                mainHeight: 300,
+                ifMenuShow: true,
+                zoomNum: '1.0',
+                textAlign: 'left',
+                zoomStyle: {},
+                pageDatas: ['<p><span style="font-family:Helvetica;font-size:21.840000px;font-style:italic;font-weight:bold;color:#000000;"><span style="position:absolute;top:82.215904px;left:205.821365px"><nobr>Deep Leaning &amp; AI in China </nobr></span></span></p><p><span style="font-family:Helvetica;font-size:10.320001px;font-style:italic;font-weight:bold;color:#000000;"><span style="position:absolute;top:131.169434px;left:356.745331px"><nobr>Jingxian WANG </nobr></span></span></p><p><span style="font-family:Helvetica;font-size:12.000000px;font-weight:bold;color:#000000;"><span style="position:absolute;top:183.531570px;left:100.101112px"><nobr>I. Avant-propos : </nobr></span></span></p><p><span style="font-family:Helvetica;font-size:10.800000px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:220.288406px;left:100.101112px"><nobr>La Chine, en tant que pays en développement dont le développement est le plus important, fait </nobr></span><span style="position:absolute;top:237.890701px;left:76.112213px"><nobr>face à de nombreux problèmes et défis. C\'est actuellement le plus grand émetteur de gaz à effet </nobr></span><span style="position:absolute;top:255.492920px;left:76.112213px"><nobr>de serre au monde. Elle doit également améliorer les services publics au profit de ses 1,3 milliard </nobr></span><span style="position:absolute;top:273.095306px;left:76.112213px"><nobr>d\'habitants, notamment parce qu\'elle est entrée dans une société vieillissante. Par conséquent, il </nobr></span><span style="position:absolute;top:290.697601px;left:76.112213px"><nobr>est urgent que la Chine s\'appuie sur l\'IA pour résoudre ses problèmes internes. </nobr></span></span></p><p><span style="font-family:Helvetica;font-size:10.800000px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:325.902252px;left:100.101112px"><nobr>Cet article explique tout d\'abord le concept de l\'IA et du deep learning dans ses domaines </nobr></span><span style="position:absolute;top:343.504486px;left:76.112213px"><nobr>connexes. Deuxièmement, la recherche sera menée dans les domaines suivants : reconnaissance </nobr></span><span style="position:absolute;top:361.106781px;left:76.112213px"><nobr>vocale et traitement du langage naturel, reconnaissance d\'image (reconnaissance faciale et </nobr></span><span style="position:absolute;top:378.709137px;left:76.112213px"><nobr>données d\'image à grande échelle) et applications de détection des piétons et de reconnaissance </nobr></span><span style="position:absolute;top:396.311432px;left:76.112213px"><nobr>des comportements. Enfin, l\'article analyse les raisons du développement rapide de l\'IA en Chine </nobr></span><span style="position:absolute;top:413.913727px;left:76.112213px"><nobr>et les perspectives de développement futur. </nobr></span></span></p><p><span style="font-family:Helvetica;font-size:12.000000px;font-weight:bold;color:#000000;"><span style="position:absolute;top:449.486267px;left:100.101112px"><nobr>II. Les concepts de l\'IA et du Deep Learning : </nobr></span></span></p><p><span style="font-family:Helvetica;font-size:10.800000px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:485.923004px;left:100.101112px"><nobr>Le Deep Learning (DL) a été proposé par Hinton et al. en 2006, et c\'est un nouveau domaine </nobr></span><span style="position:absolute;top:503.525330px;left:76.112213px"><nobr>du Machine Learning (ML). </nobr></span></span></p><p><span style="font-family:Helvetica;font-size:10.800000px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:538.729919px;left:100.101112px"><nobr>Le deep learning a été introduit dans le machine learning pour le rapprocher de son objectif </nobr></span><span style="position:absolute;top:553.626282px;left:76.112213px"><nobr>d <span style="font-family:Arial Unicode MS;">’ </span><span style="font-family:Helvetica;">origine : l\'intelligence artificielle (IA). </span></nobr></span></span></p><p><span style="font-family:Helvetica;font-size:10.800000px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:576.174866px;left:100.101112px"><nobr>L\'apprentissage profond consiste à apprendre les lois inhérentes et les niveaux de </nobr></span><span style="position:absolute;top:593.777100px;left:76.112213px"><nobr>représentation des échantillons de données. Les informations obtenues au cours de ces processus </nobr></span><span style="position:absolute;top:611.379456px;left:76.112213px"><nobr>d\'apprentissage sont très utiles pour l\'interprétation de données telles que le texte, les images et </nobr></span><span style="position:absolute;top:628.981750px;left:76.112213px"><nobr>les sons. Son objectif ultime est de permettre aux machines d\'analyser et d\'apprendre comme des </nobr></span><span style="position:absolute;top:646.584106px;left:76.112213px"><nobr>humains, et de reconnaître des données telles que du texte, des images et du son. </nobr></span></span></p><p><span style="font-family:Helvetica;font-size:10.800000px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:681.788635px;left:100.101112px"><nobr>Le Deep Learning est un algorithme d\'apprentissage automatique complexe qui permet </nobr></span><span style="position:absolute;top:699.390930px;left:76.112213px"><nobr>d\'obtenir beaucoup plus de résultats en reconnaissance de langage et d\'image que les </nobr></span><span style="position:absolute;top:716.993347px;left:76.112213px"><nobr>technologies connexes précédentes. Il a permis d ’obtenir de nombreux résultats dans les </nobr></span><span style="position:absolute;top:734.595520px;left:76.112213px"><nobr>technologies de la recherche, l\'exploration de données, l\'apprentissage automatique, la traduction </nobr></span><span style="position:absolute;top:752.197937px;left:76.112213px"><nobr>automatique, le traitement du langage naturel, l\'apprentissage multimédia, la parole, les </nobr></span><span style="position:absolute;top:769.800110px;left:76.112213px"><nobr>technologies de recommandation et de personnalisation, et d\'autres domaines connexes. </nobr></span><span style="position:absolute;top:787.402527px;left:76.112213px"><nobr>L\'apprentissage en profondeur permet aux machines d\'imiter les activités humaines telles que </nobr></span><span style="position:absolute;top:805.004883px;left:76.112213px"><nobr>l\'audiovisuel et la pensée, et résout de nombreux problèmes complexes de reconnaissance de </nobr></span><span style="position:absolute;top:822.607117px;left:76.112213px"><nobr>formes. L ’apprentissage en profondeur a permis de grands progrès dans les technologies liées à </nobr></span><span style="position:absolute;top:840.209473px;left:76.112213px"><nobr>l\'intelligence artificielle. </nobr></span></span></p><p><span style="font-family:Helvetica;font-size:12.000000px;font-weight:bold;color:#000000;"><span style="position:absolute;top:875.782043px;left:100.101112px"><nobr>III. État de l\'IA en Chine et son application dans divers domaines : </nobr></span></span></p><p><span style="font-family:Helvetica;font-size:10.800000px;font-weight:bold;color:#000000;"><span style="position:absolute;top:912.218994px;left:100.101112px"><nobr>1. Reconnaissance vocale, traitement du langage naturel : </nobr></span></span></p><p><span style="font-family:Helvetica;font-size:10.800000px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:947.423523px;left:100.101112px"><nobr>a. Reconnaissance vocale : </nobr></span></span></p><p><span style="font-family:Helvetica;font-size:10.800000px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:982.628052px;left:100.101112px"><nobr>Les réseaux de neurones ont été utilisés pour la première fois pour la reconnaissance vocale </nobr></span><span style="position:absolute;top:1000.230225px;left:76.112213px"><nobr>en 2009 et n\'ont été mis en œuvre par Google qu\'en 2012. Le deep learning (également connu </nobr></span><span style="position:absolute;top:1017.832703px;left:76.112213px"><nobr>sous le nom de réseaux de neurones) est un sous-ensemble du machine learning qui utilise des </nobr></span></span></p>','<p><span style="font-family:Helvetica;font-size:10.800000px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:79.149902px;left:76.112213px"><nobr>modèles informatiques inspirés de la structure du cerveau. Les réseaux de neurones peuvent </nobr></span><span style="position:absolute;top:96.752197px;left:76.112213px"><nobr>apprendre des tâches en analysant de grandes quantités de données, et ils prennent en charge </nobr></span><span style="position:absolute;top:114.354492px;left:76.112213px"><nobr>une variété de fonctions de la reconnaissance faciale sur Facebook à la traduction de Microsoft à </nobr></span><span style="position:absolute;top:131.956863px;left:76.112213px"><nobr>la recherche Internet de Google. Ils ont commencé à aider les chatbots à acquérir les </nobr></span><span style="position:absolute;top:149.559082px;left:76.112213px"><nobr>compétences de conversation. </nobr></span></span></p><p><span style="font-family:Helvetica;font-size:10.800000px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:184.763748px;left:100.101112px"><nobr>Pendant longtemps, la plupart des systèmes de reconnaissance vocale utilisent le modèle </nobr></span><span style="position:absolute;top:202.366043px;left:76.112213px"><nobr>gaussien hybride (GMM) pour décrire le modèle de probabilité statistique de chaque unité de </nobr></span><span style="position:absolute;top:220.288406px;left:76.112213px"><nobr>modélisation. Parce que ce modèle est simple à estimer et facile à former avec des données à </nobr></span><span style="position:absolute;top:237.890701px;left:76.112213px"><nobr>grande échelle, le modèle dispose d\'un bon algorithme de formation discriminatoire pour s\'assurer </nobr></span><span style="position:absolute;top:255.492920px;left:76.112213px"><nobr>que le modèle peut être bien formé. Ce modèle a longtemps occupé une position dominante dans </nobr></span><span style="position:absolute;top:273.095306px;left:76.112213px"><nobr>le domaine des applications de reconnaissance vocale. </nobr></span></span></p><p><span style="font-family:Helvetica;font-size:10.800000px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:308.299896px;left:100.101112px"><nobr>Fondée en 1999, Beijing iFlytek est un leader du parole intelligente et de l\'intelligence </nobr></span><span style="position:absolute;top:325.902252px;left:76.112213px"><nobr>artificielle. </nobr></span></span></p><p><span style="font-family:Helvetica;font-size:10.800000px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:361.106781px;left:100.101112px"><nobr>Baidu utilise une architecture de réseau de neurones profonds comprenant jusqu\'à 9 couches. </nobr></span><span style="position:absolute;top:378.709137px;left:76.112213px"><nobr>C\'est cette différence structurelle qui permet de mieux résoudre les problèmes de calcul de </nobr></span><span style="position:absolute;top:396.311432px;left:76.112213px"><nobr>l\'apprentissage en ligne de réseaux de neurones profonds. Cela permet aux produits en ligne de </nobr></span><span style="position:absolute;top:413.913727px;left:76.112213px"><nobr>Baidu d\'utiliser des modèles de réseau de neurones plus complexes. Le c œur de cette différence </nobr></span><span style="position:absolute;top:431.515869px;left:76.112213px"><nobr>structurelle est que Baidu a mieux résolu les problèmes techniques de l\'informatique en ligne des </nobr></span><span style="position:absolute;top:449.118225px;left:76.112213px"><nobr>réseaux de neurones profonds, de sorte que les produits en ligne de Baidu peuvent utiliser des </nobr></span><span style="position:absolute;top:466.720490px;left:76.112213px"><nobr>modèles de réseau plus complexes. Cela sera plus utile pour le développement futur de données </nobr></span><span style="position:absolute;top:484.322815px;left:76.112213px"><nobr>de corpus à grande échelle pour la formation de modèles de réseaux de neurones profonds. </nobr></span></span></p><p><span style="font-family:Helvetica;font-size:10.800000px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:519.527466px;left:100.101112px"><nobr>Une fois le réseau de neurones profond utilisé, les informations de corrélation entre les </nobr></span><span style="position:absolute;top:537.129700px;left:76.112213px"><nobr>caractéristiques des échantillons de données peuvent être entièrement exprimées. Les </nobr></span><span style="position:absolute;top:554.731995px;left:76.112213px"><nobr>informations de caractéristiques continues sont combinées pour former des caractéristiques de </nobr></span><span style="position:absolute;top:572.334351px;left:76.112213px"><nobr>grande dimension. Le modèle de réseau de neurones profond est formé par les échantillons de </nobr></span><span style="position:absolute;top:589.936646px;left:76.112213px"><nobr>caractéristiques de grande dimension. Étant donné que le réseau de neurones profond utilise une </nobr></span><span style="position:absolute;top:607.538940px;left:76.112213px"><nobr>architecture neuronale du cerveau humain simulée, les caractéristiques des données sont extraites </nobr></span><span style="position:absolute;top:625.141235px;left:76.112213px"><nobr>couche par couche pour enfin obtenir les caractéristiques idéales adaptées au traitement de la </nobr></span><span style="position:absolute;top:642.743530px;left:76.112213px"><nobr>classification des formes. La technologie de modélisation de réseau de neurones profonds peut </nobr></span><span style="position:absolute;top:660.345886px;left:76.112213px"><nobr>être bien combinée avec la technologie de reconnaissance vocale traditionnelle lorsqu\'elle est </nobr></span><span style="position:absolute;top:677.948120px;left:76.112213px"><nobr>appliquée sur la ligne réelle, et le taux de reconnaissance du système de reconnaissance vocale </nobr></span><span style="position:absolute;top:695.550476px;left:76.112213px"><nobr>est considérablement amélioré. </nobr></span></span></p><p><span style="font-family:Helvetica;font-size:10.800000px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:730.755066px;left:100.101112px"><nobr>b. Traitement du langage naturel : </nobr></span></span></p><p><span style="font-family:Helvetica;font-size:10.800000px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:765.959656px;left:100.101112px"><nobr>Le problème du traitement du langage naturel (PNL) est un autre domaine d\'application </nobr></span><span style="position:absolute;top:783.882080px;left:76.112213px"><nobr>important de l\'apprentissage profond en plus du traitement de la parole et des images. Pendant </nobr></span><span style="position:absolute;top:801.484375px;left:76.112213px"><nobr>des décennies, la méthode traditionnelle de traitement du langage naturel est un modèle </nobr></span><span style="position:absolute;top:819.086670px;left:76.112213px"><nobr>statistique. Les réseaux de neurones artificiels sont également l\'un des modèles basés sur des </nobr></span><span style="position:absolute;top:836.688965px;left:76.112213px"><nobr>méthodes statistiques, mais ils n\'ont pas été valorisés dans le domaine du traitement du langage </nobr></span><span style="position:absolute;top:854.291321px;left:76.112213px"><nobr>naturel. La modélisation du langage est le premier problème du réseau neuronal pour le traitement </nobr></span><span style="position:absolute;top:871.893555px;left:76.112213px"><nobr>du langage naturel. </nobr></span></span></p><p><span style="font-family:Helvetica;font-size:10.800000px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:907.098145px;left:100.101112px"><nobr>Étant donné que le deep learning peut bien résoudre certains problèmes complexes, de </nobr></span><span style="position:absolute;top:924.700500px;left:76.112213px"><nobr>nombreux chercheurs ont mené des recherches approfondies à ce sujet ces dernières années, et </nobr></span><span style="position:absolute;top:942.302856px;left:76.112213px"><nobr>de nombreuses avancées dans la recherche en deep learning ont émergé, telles que les méthodes </nobr></span><span style="position:absolute;top:959.905151px;left:76.112213px"><nobr>d\'initialisation, la sélection des couches réseau et les fonctions d\'activation, Structure du modèle </nobr></span><span style="position:absolute;top:977.507385px;left:76.112213px"><nobr>(DBN, réseau de produits de somme, apprentissage basé sur des unités rectifiées, réseau </nobr></span><span style="position:absolute;top:995.109680px;left:76.112213px"><nobr>neuronal convolutionnel). En raison de la longueur de l\'article, nous ne développerons pas ici. </nobr></span></span></p>','<p><span style="font-family:Helvetica;font-size:10.800000px;font-weight:bold;color:#000000;"><span style="position:absolute;top:79.149902px;left:100.101112px"><nobr>2. Reconnaissance d\'image (reconnaissance faciale et données d\'image à grande </nobr></span><span style="position:absolute;top:96.752197px;left:124.090019px"><nobr>échelle) : </nobr></span></span></p><p><span style="font-family:Helvetica;font-size:10.800000px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:131.956863px;left:100.101112px"><nobr>a. Reconnaissance faciale : </nobr></span></span></p><p><span style="font-family:Helvetica;font-size:10.800000px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:167.161377px;left:100.101112px"><nobr>Le traitement d\'image est le premier domaine des algorithmes d\'apprentissage en profondeur. </nobr></span><span style="position:absolute;top:184.763748px;left:76.112213px"><nobr>Le réseau neuronal convolutif est également appelé CNN, c\'est un modèle de réseau neuronal </nobr></span><span style="position:absolute;top:202.366043px;left:76.112213px"><nobr>profond contenant des couches convolutives. Généralement, une architecture de réseau de </nobr></span><span style="position:absolute;top:220.288406px;left:76.112213px"><nobr>neurones convolutifs comprend deux couches convolutives non linéaires qui peuvent être </nobr></span><span style="position:absolute;top:237.890701px;left:76.112213px"><nobr>générées par la formation de deux couches de sous-échantillonnage fixes et une couche </nobr></span><span style="position:absolute;top:255.492920px;left:76.112213px"><nobr>entièrement connectée. Le nombre de couches cachées est généralement d\'au moins cinq. La </nobr></span><span style="position:absolute;top:273.095306px;left:76.112213px"><nobr>conception architecturale de CNN a été inspirée par les modèles de vision animale des biologistes </nobr></span><span style="position:absolute;top:290.697601px;left:76.112213px"><nobr>Hubel et Wiesel, en particulier, les fonctions des cellules simples et des cellules complexes dans le </nobr></span><span style="position:absolute;top:308.299896px;left:76.112213px"><nobr>système visuel du cortex visuel animal V1 et V2 sont simulées. </nobr></span></span></p><p><span style="font-family:Helvetica;font-size:10.800000px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:343.504486px;left:100.101112px"><nobr>Basé sur la méthode d\'apprentissage par réseau neuronal convolutif, le projet DeepID de </nobr></span><span style="position:absolute;top:361.106781px;left:76.112213px"><nobr>l\'Université chinoise de Hong Kong et le projet DeepFace de Facebook ont des taux de précision </nobr></span><span style="position:absolute;top:378.709137px;left:76.112213px"><nobr>de reconnaissance faciale de 97,45% et 97,35% sur la reconnaissance faciale en extérieur (base </nobr></span><span style="position:absolute;top:396.311432px;left:76.112213px"><nobr>de données de visages étiquetés dans la nature (LFW)), Légèrement inférieur à la précision de la </nobr></span><span style="position:absolute;top:413.913727px;left:76.112213px"><nobr>reconnaissance humaine 97,5%. Le projet DeepID utilise une structure de réseau neuronal </nobr></span><span style="position:absolute;top:431.515869px;left:76.112213px"><nobr>convolutionnel à 4 couches (à l\'exclusion de la couche d\'entrée et de la couche de sortie), et </nobr></span><span style="position:absolute;top:449.118225px;left:76.112213px"><nobr>DeepFace utilise un réseau neuronal convolutionnel à 5 couches (à l\'exclusion de la couche </nobr></span><span style="position:absolute;top:466.720490px;left:76.112213px"><nobr>d\'entrée et de la couche de sortie, dont les 3 dernières couches n\'utilisent pas le partage de poids </nobr></span><span style="position:absolute;top:484.322815px;left:76.112213px"><nobr>pour obtenir différents Structure statistique locale), puis une méthode d\'apprentissage basée sur </nobr></span><span style="position:absolute;top:501.925079px;left:76.112213px"><nobr>un réseau neuronal convolutionnel est utilisée. Le projet DeepID2 de l\'Université chinoise de Hong </nobr></span><span style="position:absolute;top:519.527466px;left:76.112213px"><nobr>Kong a augmenté le taux de reconnaissance à 99,15%, dépassant les taux de reconnaissance de </nobr></span><span style="position:absolute;top:537.129700px;left:76.112213px"><nobr>tous les principaux algorithmes d\'apprentissage profond et non profond de la base de données </nobr></span><span style="position:absolute;top:554.731995px;left:76.112213px"><nobr>LFW et le taux de reconnaissance des humains dans cette base de données. Le projet DeepID2 </nobr></span><span style="position:absolute;top:572.334351px;left:76.112213px"><nobr>utilise une structure de profondeur similaire au projet DeepID, y compris 4 couches </nobr></span><span style="position:absolute;top:589.936646px;left:76.112213px"><nobr>convolutionnelles, dont la troisième couche utilise le partage de poids local dans le voisinage 2 * 2, </nobr></span><span style="position:absolute;top:607.538940px;left:76.112213px"><nobr>la quatrième couche n\'utilise pas le partage de poids et la couche de sortie est similaire aux </nobr></span><span style="position:absolute;top:622.435303px;left:76.112213px"><nobr>troisièmes et troisi <span style="font-family:Arial Unicode MS;">è </span><span style="font-family:Helvetica;">mes couches. Les quatre couches sont entièrement connectées. </span></nobr></span></span></p><p><span style="font-family:Helvetica;font-size:10.800000px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:662.586182px;left:100.101112px"><nobr>b. Données d\'image à grande échelle: </nobr></span></span></p><p><span style="font-family:Helvetica;font-size:10.800000px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:697.790710px;left:100.101112px"><nobr>Les ventes du géant chinois de la vente en ligne en ligne Alibaba atteignent 43 milliards </nobr></span><span style="position:absolute;top:715.393066px;left:76.112213px"><nobr>d\'euros, soit un taux de croissance de plus de 50,6%. Le rôle de l\'IA ne peut être ignoré. Par </nobr></span><span style="position:absolute;top:732.995422px;left:76.112213px"><nobr>exemple, Taobao sous Ali a adopté la fonction de prendre des photos pour identifier des photos ou </nobr></span><span style="position:absolute;top:750.597656px;left:76.112213px"><nobr>de charger des photos d\'album pour rechercher des produits. </nobr></span></span></p><p><span style="font-family:Helvetica;font-size:10.800000px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:785.802307px;left:100.101112px"><nobr>La reconnaissance d\'image du géant chinois de l\'Internet Baidu a dépassé Google avec une </nobr></span><span style="position:absolute;top:802.762939px;left:76.112213px"><nobr>précision de 95,2%. (Balenieri, 2018) (CHOU, 2019) (Deep Observation <span style="font-family:Arial Unicode MS;">｜ </span><span style="font-family:Helvetica;">Using the Ping An </span></nobr></span><span style="position:absolute;top:822.287109px;left:76.112213px"><nobr>Index to Create a "New Algorithm" for Urban Governance, 2020) (China\'s combat reconnaissance </nobr></span><span style="position:absolute;top:839.889404px;left:76.112213px"><nobr>drones and their combat use, 2019) (Environment Brain, n.d.) (Lambert, 2018) (O ’Meara, 2019) </nobr></span><span style="position:absolute;top:857.491699px;left:76.112213px"><nobr>(Autonomous Driving Solution, n.d.) Baidu a appliqué avec succès les dernières technologies pour </nobr></span><span style="position:absolute;top:875.093994px;left:76.112213px"><nobr>la reconnaissance faciale et la reconnaissance naturelle de l\'image, et a lancé les produits </nobr></span><span style="position:absolute;top:892.696289px;left:76.112213px"><nobr>correspondants. Les modèles de réseau d\'apprentissage en profondeur sont désormais capables </nobr></span><span style="position:absolute;top:910.618713px;left:76.112213px"><nobr>de comprendre et de reconnaître des images naturelles générales. Les modèles d\'apprentissage </nobr></span><span style="position:absolute;top:928.220947px;left:76.112213px"><nobr>en profondeur améliorent non seulement considérablement la précision de la reconnaissance </nobr></span><span style="position:absolute;top:945.823242px;left:76.112213px"><nobr>d\'image, mais évitent également la nécessité de consacrer beaucoup de temps à l\'extraction </nobr></span><span style="position:absolute;top:963.425537px;left:76.112213px"><nobr>manuelle des fonctionnalités, ce qui améliore considérablement l\'efficacité des opérations en ligne. </nobr></span><span style="position:absolute;top:981.027771px;left:76.112213px"><nobr>L\'apprentissage en profondeur remplacera probablement la combinaison précédente de </nobr></span><span style="position:absolute;top:998.630127px;left:76.112213px"><nobr>l\'apprentissage manuel et automatique en tant que technologie de reconnaissance d\'image </nobr></span><span style="position:absolute;top:1016.232422px;left:76.112213px"><nobr>traditionnelle. </nobr></span></span></p>']
+            }
+        },
+        mounted: function() {
+            this.$nextTick(function() {
+                this.pageNum = this.pageDatas.length;
+                this.pageContent = this.pageDatas[0];
+
+                this.setLeftMenuHeight();
+            })
+        },
+        watch: {
+            'currentPage': function(newVal, oldValue) {
+                // console.log('newVal ' + newVal, 'oldValue ' + oldValue);
+                if (newVal) {
+                    this.pageContent = this.pageDatas[this.currentPage - 1];
+                }
+            },
+            'zoomNum': function(newVal, oldValue) {
+                if (newVal) {
+                    this.zoomStyle = {
+                        'transform': 'scale(' + newVal + ')',
+                        '-webkit-transform': 'scale(' + newVal + ')',
+                        '-ms-transform': 'scale(' + newVal + ')',
+                        '-moz-transform': 'scale(' + newVal + ')',
+                        '-o-transform': 'scale(' + newVal + ')'
+                    }
+                }
+            }
+        },
+        methods: {
+            
+            changeCurrentPage: function(methods) {
+                switch (methods) {
+                    case 'first':
+                        this.currentPage = 1;
+                        break;
+                    case 'prev':
+                        if (this.currentPage > 1) {
+                            this.currentPage -= 1;
+                        }
+                        break;
+                    case 'next':
+                        if (this.currentPage < this.pageNum) {
+                            this.currentPage += 1;
+                        }
+                        break;
+                    case 'last':
+                        this.currentPage = this.pageNum;
+                        break;
+                }
+            },
+
+            gotoPage: function(page) {
+                console.log(page);
+                this.currentPage = page;
+            },
+            modifyZoom: function(type) {
+                switch (type) {
+                    case 'in':
+                        if (this.zoomNum < 2) {
+                            // this.zoomNum = (this.zoomNum + 0.1).toFixed(1);
+                            this.zoomNum = (parseFloat(this.zoomNum) + 0.1).toFixed(1);
+                        }
+                        break;
+                    case 'out':
+                        if (this.zoomNum > 0.5) {
+                            this.zoomNum = (parseFloat(this.zoomNum) - 0.1).toFixed(1);
+                        }
+                        break;
+                    default:
+                        break;
+                }
+                console.log(this.zoomNum);
+            },
+            setLeftMenuHeight: function() {
+                // this.asideHeight = document.body.scrollHeight - 60;
+                this.mainHeight = document.documentElement.clientHeight - 60 - 20;
+                // 60为头部导航高度， 46为menu高度， 40为上下padding
+                this.asideHeight = this.mainHeight - 20 - 46;
+            },
+            changePage: function(page) {
+                this.currentPage = page;
+                // this.pageContent = this.pageDatas[page - 1];
+            },
+            changeLeftMenu: function() {
+                this.ifMenuShow = !this.ifMenuShow;
+            }
+        }
+    });
+
+function gotoPage(page) {
+    console.log(page);
+    app.gotoPage(page);
+}
+
+</script>
+
+</html>
